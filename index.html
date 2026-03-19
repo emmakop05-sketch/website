@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced Inventory System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Inventory System</h1>
+
+    <div class="form">
+        <input type="text" id="name" placeholder="Product Name">
+        <input type="number" id="quantity" placeholder="Quantity">
+        <input type="number" id="price" placeholder="Price">
+        <button onclick="addOrUpdateProduct()" id="addBtn">Add Product</button>
+    </div>
+
+    <input type="text" id="search" placeholder="Search product..." onkeyup="searchProduct()">
+
+    <h3 id="totalValue">Total Value: ₦0</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
