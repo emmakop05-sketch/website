@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOT MORE TRADING STORE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>🏪 LOT MORE TRADING STORE</h1>
+
+        <div class="user-section">
+            <span id="userRole"></span>
+            <button onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard">
+        <div class="card">📦 Total Items: <span id="totalItems">0</span></div>
+        <div class="card">💰 Total Value: ₦<span id="totalValue">0</span></div>
+        <div class="card">⚠️ Low Stock: <span id="lowStock">0</span></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+        <button onclick="toggleDarkMode()">🌙 Toggle Mode</button>
+        <button onclick="exportCSV()">📊 Export CSV</button>
+    </div>
+
+    <!-- ADMIN ONLY FORM -->
+    <div id="adminSection">
+        <h3>Add / Edit Item</h3>
+
+        <form id="item-form">
+            <input>
+       <script src="script.js"></script>     
