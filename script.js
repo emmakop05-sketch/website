@@ -1,43 +1,25 @@
-// LOGOUT FUNCTION
-function logout() {
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
-}
-
-// DARK MODE
-function toggleDarkMode() {
-    document.body.classList.toggle("light");
-}
-
-// ================= USER SYSTEM =================
-// Get users or create default admin
-let users = JSON.parse(localStorage.getItem("users")) || [
-    { username: "admin", password: "admin123", role: "admin" }
-];
-
-// Get logged in user
+// ================= AUTH =================
 let currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-// Redirect if not logged in
-if (!currentUser && !window.location.href.includes("login.html")) {
+if (!currentUser) {
     window.location.href = "login.html";
 }
 
-// ================= LOGOUT =================
-function logout() {
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
+// SHOW USER
+document.getElementById("userRole").textContent =
+    currentUser.username + " (" + currentUser.role + ")";
+
+// HIDE ADMIN
+if (currentUser.role !== "admin") {
+    document.getElementById("adminSection").style.display = "none";
 }
 
-// ================= INVENTORY =================
+// ================= DATA =================
 let items = JSON.parse(localStorage.getItem("items")) || [];
-let editIndex = null;
-
-const form = document.getElementById("item-form");
-const list = document.getElementById("item-list");
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 // ================= SAVE =================
-function saveData() {
+function save() {
     localStorage.setItem("items", JSON.stringify(items));
 }
 
@@ -57,118 +39,135 @@ function updateDashboard() {
     document.getElementById("lowStock").textContent = lowStock;
 }
 
-// ================= DISPLAY =================
-function displayItems(data = items) {
-    if (!list) return;
-
+// ================= DISPLAY ITEMS =================
+function displayItems() {
+    const list = document.getElementById("item-list");
     list.innerHTML = "";
 
-    data.forEach((item, index) => {
-        let statusClass = item.quantity < 5 ? "status-low" : "status-ok";
-        let statusText = item.quantity < 5 ? "Low ⚠️" : "Available ✅";
-
-        // ADMIN ONLY ACTIONS
-        let actions = "";
-        if (currentUser.role === "admin") {
-            actions = `
-                <button onclick="editItem(${index})">Edit</button>
-                <button onclick="deleteItem(${index})">Delete</button>
-            `;
-        } else {
-            actions = `<span style="opacity:0.5;">No Access</span>`;
-        }
-
+    items.forEach((item, i) => {
         list.innerHTML += `
         <tr>
             <td>${item.name}</td>
             <td>${item.quantity}</td>
-            <td>${item.price}</td>
+            <td>₦${item.price}</td>
             <td>${item.category}</td>
-            <td class="${statusClass}">${statusText}</td>
-            <td>${actions}</td>
+            <td>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</td>
+            <td>
+                ${currentUser.role === "admin" ? `
+                    <button onclick="editItem(${i})">Edit</button>
+                    <button onclick="deleteItem(${i})">Delete</button>
+                ` : "No Access"}
+            </td>
         </tr>`;
     });
 
     updateDashboard();
 }
 
-// ================= ADD / EDIT =================
-if (form) {
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const newItem = {
-            name: document.getElementById("name").value,
-            quantity: Number(document.getElementById("quantity").value),
-            price: Number(document.getElementById("price").value),
-            category: document.getElementById("category").value
-        };
-
-        if (editIndex === null) {
-            items.push(newItem);
-        } else {
-            items[editIndex] = newItem;
-            editIndex = null;
-        }
-
-        form.reset();
-        saveData();
-        displayItems();
-    });
-}
-
 // ================= DELETE =================
-function deleteItem(index) {
-    if (currentUser.role !== "admin") {
-        alert("Only admin can delete!");
-        return;
-    }
-
-    items.splice(index, 1);
-    saveData();
+window.deleteItem = function(i) {
+    items.splice(i, 1);
+    save();
     displayItems();
-}
+    displayProducts();
+};
 
 // ================= EDIT =================
-function editItem(index) {
-    if (currentUser.role !== "admin") {
-        alert("Only admin can edit!");
-        return;
-    }
-
-    const item = items[index];
+window.editItem = function(i) {
+    const item = items[i];
 
     document.getElementById("name").value = item.name;
     document.getElementById("quantity").value = item.quantity;
     document.getElementById("price").value = item.price;
     document.getElementById("category").value = item.category;
 
-    editIndex = index;
-}
+    deleteItem(i);
+};
 
-// ================= SEARCH =================
-const searchInput = document.getElementById("search");
+// ================= ADD =================
+document.getElementById("item-form").addEventListener("submit", e => {
+    e.preventDefault();
 
-if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-        const value = e.target.value.toLowerCase();
+    items.push({
+        name: name.value,
+        quantity: Number(quantity.value),
+        price: Number(price.value),
+        category: category.value
+    });
 
-        const filtered = items.filter(item =>
-            item.name.toLowerCase().includes(value) ||
-            item.category.toLowerCase().includes(value)
-        );
+    save();
+    e.target.reset();
 
-        displayItems(filtered);
+    displayItems();
+    displayProducts();
+});
+
+// ================= PRODUCTS =================
+function displayProducts() {
+    const div = document.getElementById("product-list");
+    div.innerHTML = "";
+
+    items.forEach((item, i) => {
+        div.innerHTML += `
+        <div class="card">
+            <h3>${item.name}</h3>
+            <p>₦${item.price}</p>
+            <p>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</p>
+
+            <button onclick="addToCart(${i})">
+                🛒 Add to Cart
+            </button>
+        </div>`;
     });
 }
 
-// ================= DARK MODE =================
-function toggleDarkMode() {
-    document.body.classList.toggle("light");
+// ================= CART =================
+window.addToCart = function(i) {
+    if (items[i].quantity <= 0) {
+        alert("Out of stock!");
+        return;
+    }
+
+    cart.push(items[i]);
+    items[i].quantity -= 1;
+
+    save();
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    displayCart();
+    displayItems();
+    displayProducts();
+};
+
+// ================= DISPLAY CART =================
+function displayCart() {
+    const div = document.getElementById("cart");
+    let total = 0;
+
+    div.innerHTML = "";
+
+    cart.forEach(item => {
+        total += item.price;
+        div.innerHTML += `<p>${item.name} - ₦${item.price}</p>`;
+    });
+
+    div.innerHTML += `<h3>Total: ₦${total}</h3>`;
 }
 
-// ================= EXPORT =================
-function exportCSV() {
+// ================= CHECKOUT =================
+window.checkout = function() {
+    if (cart.length === 0) return alert("Cart is empty!");
+
+    alert("Order placed successfully 🎉");
+
+    cart = [];
+    localStorage.removeItem("cart");
+
+    displayCart();
+};
+
+// ✅ FIXED ERROR HERE
+window.exportCSV = function() {
     let csv = "Name,Quantity,Price,Category\n";
 
     items.forEach(item => {
@@ -182,10 +181,19 @@ function exportCSV() {
     a.href = url;
     a.download = "inventory.csv";
     a.click();
-}
+};
+
+// ================= UI =================
+window.toggleDarkMode = function() {
+    document.body.classList.toggle("light");
+};
+
+window.logout = function() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+};
 
 // ================= INIT =================
-displayItems(); 
-document.addEventListener("DOMContentLoaded", () => {
-    displayItems();
-});
+displayItems();
+displayProducts();
+displayCart();

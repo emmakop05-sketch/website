@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Inventory App</title>
+<title>Login</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,14 +10,12 @@
 <div class="auth-container">
     <h2>🔐 Login</h2>
 
-    <input type="text" id="login-username" placeholder="Username">
-    <input type="password" id="login-password" placeholder="Password">
+    <input id="loginUser" placeholder="Username">
+    <input id="loginPass" type="password" placeholder="Password">
 
-    <button onclick="loginUser()">Login</button>
+    <button onclick="login()">Login</button>
 
-    <p>Don't have an account? 
-        <a href="signup.html">Sign Up</a>
-    </p>
+    <p>No account? <a href="signup.html">Sign up</a></p>
 </div>
 
 <script src="auth.js"></script>

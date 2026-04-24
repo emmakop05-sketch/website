@@ -28,16 +28,54 @@
         <div class="card">⚠️ Low Stock: <span id="lowStock">0</span></div>
     </div>
 
+    <!-- PRODUCTS -->
+    <h2>🛍️ Products</h2>
+    <div id="product-list" class="products"></div>
+
+    <!-- CART -->
+    <h2>🛒 Cart</h2>
+    <div id="cart"></div>
+    <button onclick="checkout()">💳 Checkout</button>
+
     <!-- CONTROLS -->
     <div class="controls">
         <button onclick="toggleDarkMode()">🌙 Toggle Mode</button>
         <button onclick="exportCSV()">📊 Export CSV</button>
     </div>
 
-    <!-- ADMIN ONLY FORM -->
+    <!-- ADMIN -->
     <div id="adminSection">
-        <h3>Add / Edit Item</h3>
+        <h3>Add Product (Admin Only)</h3>
 
         <form id="item-form">
-            <input>
-       <script src="script.js"></script>     
+            <input type="text" id="name" placeholder="Item Name" required>
+            <input type="number" id="quantity" placeholder="Quantity" required>
+            <input type="number" id="price" placeholder="Price" required>
+            <input type="text" id="category" placeholder="Category">
+            <button type="submit">➕ Add Product</button>
+        </form>
+    </div>
+
+    <!-- SEARCH -->
+    <input type="text" id="search" placeholder="Search products...">
+
+    <!-- TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="item-list"></tbody>
+    </table>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

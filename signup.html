@@ -1,25 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up - Inventory App</title>
+<title>Sign Up</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="auth-body">
 
 <div class="auth-container">
-    <h2>📝 Create Account</h2>
+    <h2>📝 Sign Up</h2>
 
-    <input type="text" id="signup-username" placeholder="Username">
-    <input type="password" id="signup-password" placeholder="Password">
+    <input id="signupUser" placeholder="Username">
+    <input id="signupPass" type="password" placeholder="Password">
 
-    <button onclick="signupUser()">Sign Up</button>
+    <button onclick="signup()">Create Account</button>
 
-    <p>Already have an account? 
-        <a href="login.html">Login</a>
-    </p>
+    <p>Already have account? <a href="login.html">Login</a></p>
 </div>
 
 <script src="auth.js"></script>
