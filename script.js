@@ -1,142 +1,122 @@
-// ================= AUTH =================
-let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
-if (!currentUser) {
-    window.location.href = "login.html";
-}
-
-// SHOW USER
-document.getElementById("userRole").textContent =
-    currentUser.username + " (" + currentUser.role + ")";
-
-// HIDE ADMIN
-if (currentUser.role !== "admin") {
-    document.getElementById("adminSection").style.display = "none";
-}
-
-// ================= DATA =================
-let items = JSON.parse(localStorage.getItem("items")) || [];
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-// ================= SAVE =================
-function save() {
-    localStorage.setItem("items", JSON.stringify(items));
-}
-
-// ================= DASHBOARD =================
-function updateDashboard() {
-    let totalItems = items.length;
-    let totalValue = 0;
-    let lowStock = 0;
-
-    items.forEach(item => {
-        totalValue += item.price * item.quantity;
-        if (item.quantity < 5) lowStock++;
-    });
-
-    document.getElementById("totalItems").textContent = totalItems;
-    document.getElementById("totalValue").textContent = totalValue;
-    document.getElementById("lowStock").textContent = lowStock;
-}
-
-// ================= DISPLAY ITEMS =================
-function displayItems() {
-    const list = document.getElementById("item-list");
-    list.innerHTML = "";
-
-    items.forEach((item, i) => {
-        list.innerHTML += `
-        <tr>
-            <td>${item.name}</td>
-            <td>${item.quantity}</td>
-            <td>₦${item.price}</td>
-            <td>${item.category}</td>
-            <td>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</td>
-            <td>
-                ${currentUser.role === "admin" ? `
-                    <button onclick="editItem(${i})">Edit</button>
-                    <button onclick="deleteItem(${i})">Delete</button>
-                ` : "No Access"}
-            </td>
-        </tr>`;
-    });
-
-    updateDashboard();
-}
-
-// ================= DELETE =================
-window.deleteItem = function(i) {
-    items.splice(i, 1);
-    save();
-    displayItems();
-    displayProducts();
-};
-
-// ================= EDIT =================
-window.editItem = function(i) {
-    const item = items[i];
-
-    document.getElementById("name").value = item.name;
-    document.getElementById("quantity").value = item.quantity;
-    document.getElementById("price").value = item.price;
-    document.getElementById("category").value = item.category;
-
-    deleteItem(i);
-};
-
-// ================= ADD =================
-document.getElementById("item-form").addEventListener("submit", e => {
-    e.preventDefault();
-
-    items.push({
-        name: name.value,
-        quantity: Number(quantity.value),
-        price: Number(price.value),
-        category: category.value
-    });
-
-    save();
-    e.target.reset();
-
-    displayItems();
-    displayProducts();
-});
-
-// ================= PRODUCTS =================
-function displayProducts() {
-    const div = document.getElementById("product-list");
-    div.innerHTML = "";
-
-    items.forEach((item, i) => {
-        div.innerHTML += `
-        <div class="card">
-            <h3>${item.name}</h3>
-            <p>₦${item.price}</p>
-            <p>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</p>
-
-            <button onclick="addToCart(${i})">
-                🛒 Add to Cart
-            </button>
-        </div>`;
-    });
-}
-
-// ================= CART =================
-window.addToCart = function(i) {
-    if (items[i].quantity <= 0) {
-        alert("Out of stock!");
+// ================= AUTH (FIREBASE) =================
+auth.onAuthStateChanged(user => {
+    if (!user) {
+        window.location.href = "login.html";
         return;
     }
 
-    cart.push(items[i]);
-    items[i].quantity -= 1;
+    document.getElementById("userRole").textContent = user.email;
 
-    save();
+    const ADMIN_EMAIL = "youradmin@email.com"; // CHANGE THIS
+
+    if (user.email !== ADMIN_EMAIL) {
+        document.getElementById("adminSection").style.display = "none";
+    }
+});
+
+// ================= DATA =================
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+// ================= ADD PRODUCT (ADMIN ONLY) =================
+document.getElementById("item-form").addEventListener("submit", e => {
+    e.preventDefault();
+
+    const user = auth.currentUser;
+    const ADMIN_EMAIL = "youradmin@email.com";
+
+    if (user.email !== ADMIN_EMAIL) {
+        alert("Only admin can add products!");
+        return;
+    }
+
+    const name = document.getElementById("name").value;
+    const quantity = Number(document.getElementById("quantity").value);
+    const price = Number(document.getElementById("price").value);
+    const category = document.getElementById("category").value;
+
+    db.collection("products").add({
+        name,
+        quantity,
+        price,
+        category,
+        createdAt: new Date()
+    }).then(() => {
+        alert("Product added!");
+        e.target.reset();
+    });
+});
+
+// ================= REAL-TIME PRODUCTS =================
+function displayProducts() {
+    const div = document.getElementById("product-list");
+
+    db.collection("products").onSnapshot(snapshot => {
+        div.innerHTML = "";
+
+        snapshot.forEach(doc => {
+            const item = doc.data();
+
+            div.innerHTML += `
+            <div class="card">
+                <h3>${item.name}</h3>
+                <p>₦${item.price}</p>
+                <p>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</p>
+
+                <button onclick="addToCart('${doc.id}', ${item.price})">
+                    🛒 Add to Cart
+                </button>
+            </div>
+            `;
+        });
+    });
+}
+
+// ================= INVENTORY TABLE =================
+function displayItems() {
+    const list = document.getElementById("item-list");
+
+    db.collection("products").onSnapshot(snapshot => {
+        list.innerHTML = "";
+
+        snapshot.forEach(doc => {
+            const item = doc.data();
+
+            list.innerHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>₦${item.price}</td>
+                <td>${item.category}</td>
+                <td>${item.quantity > 0 ? "Available" : "Out"}</td>
+                <td>
+                    <button onclick="deleteItem('${doc.id}')">Delete</button>
+                </td>
+            </tr>
+            `;
+        });
+    });
+}
+
+// ================= DELETE PRODUCT =================
+window.deleteItem = function(id) {
+    const user = auth.currentUser;
+    const ADMIN_EMAIL = "youradmin@email.com";
+
+    if (user.email !== ADMIN_EMAIL) {
+        alert("Only admin can delete!");
+        return;
+    }
+
+    db.collection("products").doc(id).delete();
+};
+
+// ================= CART =================
+window.addToCart = function(id, price) {
+    cart.push({ id, price });
+
     localStorage.setItem("cart", JSON.stringify(cart));
 
     displayCart();
-    displayItems();
-    displayProducts();
 };
 
 // ================= DISPLAY CART =================
@@ -148,7 +128,7 @@ function displayCart() {
 
     cart.forEach(item => {
         total += item.price;
-        div.innerHTML += `<p>${item.name} - ₦${item.price}</p>`;
+        div.innerHTML += `<p>Item - ₦${item.price}</p>`;
     });
 
     div.innerHTML += `<h3>Total: ₦${total}</h3>`;
@@ -156,7 +136,7 @@ function displayCart() {
 
 // ================= CHECKOUT =================
 window.checkout = function() {
-    if (cart.length === 0) return alert("Cart is empty!");
+    if (cart.length === 0) return alert("Cart empty!");
 
     alert("Order placed successfully 🎉");
 
@@ -166,21 +146,24 @@ window.checkout = function() {
     displayCart();
 };
 
-// ✅ FIXED ERROR HERE
+// ================= EXPORT =================
 window.exportCSV = function() {
-    let csv = "Name,Quantity,Price,Category\n";
+    db.collection("products").get().then(snapshot => {
+        let csv = "Name,Quantity,Price,Category\n";
 
-    items.forEach(item => {
-        csv += `${item.name},${item.quantity},${item.price},${item.category}\n`;
+        snapshot.forEach(doc => {
+            const item = doc.data();
+            csv += `${item.name},${item.quantity},${item.price},${item.category}\n`;
+        });
+
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "products.csv";
+        a.click();
     });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "inventory.csv";
-    a.click();
 };
 
 // ================= UI =================
@@ -189,11 +172,10 @@ window.toggleDarkMode = function() {
 };
 
 window.logout = function() {
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
+    auth.signOut();
 };
 
 // ================= INIT =================
-displayItems();
 displayProducts();
+displayItems();
 displayCart();
