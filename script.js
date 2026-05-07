@@ -1,174 +1,229 @@
-document.addEventListener("DOMContentLoaded", () => {
+const currentUser =
+JSON.parse(localStorage.getItem("currentUser"));
 
-    // ================= FIREBASE =================
-    const firebaseConfig = {
-        apiKey: "AIzaSyBWnf8zHTl0nHvgLlxjDrmTlg74wZCRhv8",
-        authDomain: "lotmore-store.firebaseapp.com",
-        projectId: "lotmore-store",
-        storageBucket: "lotmore-store.appspot.com",
-        messagingSenderId: "129844135487",
-        appId: "1:129844135487:web:c65d1d938192c17191da8a"
-    };
+if(!currentUser){
+window.location.href = "login.html";
+}
 
-    firebase.initializeApp(firebaseConfig);
+let items =
+JSON.parse(localStorage.getItem("items")) || [];
 
-    const db = firebase.firestore();
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
 
-    // ================= AUTH =================
-    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+const adminPanel =
+document.getElementById("adminPanel");
 
-    if (!currentUser) {
-        window.location.href = "login.html";
-        return;
-    }
+if(currentUser.role !== "admin"){
+adminPanel.style.display = "none";
+}
 
-    document.getElementById("userRole").textContent =
-        currentUser.username + " (" + currentUser.role + ")";
+function saveProducts(){
+localStorage.setItem(
+"items",
+JSON.stringify(items)
+);
+}
 
-    if (currentUser.role !== "admin") {
-        document.getElementById("adminSection").style.display = "none";
-    }
+function displayProducts(){
 
-    // ================= DATA =================
-    let cart = [];
+const products =
+document.getElementById("products");
 
-    // ================= LOAD PRODUCTS FROM FIREBASE =================
-    function loadProducts() {
-        db.collection("products").onSnapshot(snapshot => {
-            let items = [];
+products.innerHTML = "";
 
-            snapshot.forEach(doc => {
-                items.push({ id: doc.id, ...doc.data() });
-            });
+items.forEach((item,index)=>{
 
-            displayItems(items);
-            displayProducts(items);
-        });
-    }
+products.innerHTML += `
+<div class="card">
 
-    // ================= DISPLAY TABLE =================
-    function displayItems(items) {
-        const list = document.getElementById("item-list");
-        list.innerHTML = "";
+<img src="${item.image}" alt="">
 
-        items.forEach(item => {
-            list.innerHTML += `
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>₦${item.price}</td>
-                <td>${item.category}</td>
-                <td>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</td>
-                <td>
-                    ${currentUser.role === "admin" ? `
-                        <button onclick="deleteItem('${item.id}')">Delete</button>
-                    ` : "No Access"}
-                </td>
-            </tr>`;
-        });
-    }
+<h3>${item.name}</h3>
 
-    // ================= DISPLAY SHOP =================
-    function displayProducts(items) {
-        const div = document.getElementById("product-list");
-        div.innerHTML = "";
+<p>₦${item.price}</p>
 
-        items.forEach(item => {
-            div.innerHTML += `
-            <div class="card">
-                <h3>${item.name}</h3>
-                <p>₦${item.price}</p>
-                <p>${item.quantity > 0 ? "Available ✅" : "Out ❌"}</p>
+<p>${item.category}</p>
 
-                <button onclick="addToCart('${item.id}', ${item.price})">
-                    🛒 Add to Cart
-                </button>
-            </div>`;
-        });
-    }
+<p>
+${item.quantity > 0 ?
+"Available ✅" :
+"Out of Stock ❌"}
+</p>
 
-    // ================= ADD PRODUCT (ADMIN) =================
-    const form = document.getElementById("item-form");
+<button onclick="addToCart(${index})">
+Add To Cart
+</button>
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+${
+currentUser.role === "admin" ?
+`
+<button onclick="deleteProduct(${index})">
+Delete
+</button>
+`
+:
+""
+}
 
-        if (currentUser.role !== "admin") {
-            alert("Admin only!");
-            return;
-        }
+</div>
+`;
 
-        const name = document.getElementById("name").value;
-        const quantity = Number(document.getElementById("quantity").value);
-        const price = Number(document.getElementById("price").value);
-        const category = document.getElementById("category").value;
-
-        await db.collection("products").add({
-            name,
-            quantity,
-            price,
-            category
-        });
-
-        form.reset();
-    });
-
-    // ================= DELETE =================
-    window.deleteItem = async function(id) {
-        await db.collection("products").doc(id).delete();
-    };
-
-    // ================= CART =================
-    window.addToCart = function(id, price) {
-        cart.push({ id, price });
-        displayCart();
-    };
-
-    function displayCart() {
-        const div = document.getElementById("cart");
-        let total = 0;
-
-        div.innerHTML = "";
-
-        cart.forEach(item => {
-            total += item.price;
-            div.innerHTML += `<p>₦${item.price}</p>`;
-        });
-
-        div.innerHTML += `<h3>Total: ₦${total}</h3>`;
-    }
-
-    // ================= CHECKOUT =================
-    window.checkout = function() {
-        if (cart.length === 0) {
-            alert("Cart empty!");
-            return;
-        }
-
-        alert("Order placed successfully 🎉");
-        cart = [];
-        displayCart();
-    };
-
-    // ================= EXPORT =================
-    window.exportCSV = function() {
-        alert("Export coming soon...");
-    };
-
-    // ================= UI =================
-    window.toggleDarkMode = function() {
-        document.body.classList.toggle("light");
-    };
-
-    window.logout = function() {
-        localStorage.removeItem("currentUser");
-        window.location.href = "login.html";
-    };
-
-    // INIT
-    loadProducts();
 });
-localStorage.setItem("currentUser", JSON.stringify({
-    username: "admin",
-    role: "admin"
-}));
+}
+
+document.getElementById("productForm")
+.addEventListener("submit",e=>{
+
+e.preventDefault();
+
+items.push({
+
+name:name.value,
+price:Number(price.value),
+quantity:Number(quantity.value),
+category:category.value,
+image:image.value
+
+});
+
+saveProducts();
+
+displayProducts();
+
+e.target.reset();
+
+});
+
+function deleteProduct(index){
+
+items.splice(index,1);
+
+saveProducts();
+
+displayProducts();
+
+}
+
+function addToCart(index){
+
+if(items[index].quantity <= 0){
+alert("Out of stock");
+return;
+}
+
+cart.push(items[index]);
+
+items[index].quantity--;
+
+localStorage.setItem(
+"cart",
+JSON.stringify(cart)
+);
+
+saveProducts();
+
+displayProducts();
+
+displayCart();
+
+}
+
+function displayCart(){
+
+const cartDiv =
+document.getElementById("cart");
+
+cartDiv.innerHTML = "";
+
+let total = 0;
+
+cart.forEach(item=>{
+
+total += item.price;
+
+cartDiv.innerHTML += `
+<p>
+${item.name} - ₦${item.price}
+</p>
+`;
+
+});
+
+cartDiv.innerHTML += `
+<h2>Total: ₦${total}</h2>
+`;
+
+}
+
+function checkout(){
+
+if(cart.length === 0){
+alert("Cart empty");
+return;
+}
+
+alert("Payment Successful 🎉");
+
+cart = [];
+
+localStorage.removeItem("cart");
+
+displayCart();
+
+}
+
+function toggleDarkMode(){
+document.body.classList.toggle("light");
+}
+
+function logout(){
+
+localStorage.removeItem("currentUser");
+
+window.location.href = "login.html";
+
+}
+
+document.getElementById("search")
+.addEventListener("input",e=>{
+
+const value =
+e.target.value.toLowerCase();
+
+const filtered = items.filter(item=>
+
+item.name.toLowerCase().includes(value)
+
+);
+
+const products =
+document.getElementById("products");
+
+products.innerHTML = "";
+
+filtered.forEach((item,index)=>{
+
+products.innerHTML += `
+<div class="card">
+
+<img src="${item.image}" alt="">
+
+<h3>${item.name}</h3>
+
+<p>₦${item.price}</p>
+
+<button onclick="addToCart(${index})">
+Add To Cart
+</button>
+
+</div>
+`;
+
+});
+
+});
+
+displayProducts();
+
+displayCart();

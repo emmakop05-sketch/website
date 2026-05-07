@@ -1,21 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Sign Up</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signup</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body class="auth-body">
 
-<div class="auth-container">
-    <h2>📝 Sign Up</h2>
+<div class="auth-box">
 
-    <input id="signupUser" placeholder="Username">
-    <input id="signupPass" type="password" placeholder="Password">
+<h2>Create Account</h2>
 
-    <button onclick="signup()">Create Account</button>
+<input type="text" id="signupUser" placeholder="Username">
 
-    <p>Already have account? <a href="login.html">Login</a></p>
+<input type="password" id="signupPass" placeholder="Password">
+
+<button onclick="signup()">Create Account</button>
+
+<p>
+Already have account?
+<a href="login.html">Login</a>
+</p>
+
 </div>
 
 <script src="auth.js"></script>

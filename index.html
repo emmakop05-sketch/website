@@ -3,86 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LOT MORE TRADING STORE</title>
+<title>LOT MORE STORE</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="container">
+<header>
+    <h1>🛒 LOT MORE STORE</h1>
 
-    <!-- HEADER -->
-    <div class="header">
-        <h1>🏪 LOT MORE TRADING STORE</h1>
-
-        <div class="user-section">
-            <span id="userRole"></span>
-            <button onclick="logout()">🚪 Logout</button>
-        </div>
+    <div class="top-buttons">
+        <button onclick="toggleDarkMode()">🌙 Mode</button>
+        <button onclick="logout()">🚪 Logout</button>
     </div>
+</header>
 
-    <!-- DASHBOARD -->
-    <div class="dashboard">
-        <div class="card">📦 Total Items: <span id="totalItems">0</span></div>
-        <div class="card">💰 Total Value: ₦<span id="totalValue">0</span></div>
-        <div class="card">⚠️ Low Stock: <span id="lowStock">0</span></div>
-    </div>
-
-    <!-- PRODUCTS -->
-    <h2>🛍️ Products</h2>
-    <div id="product-list" class="products"></div>
-
-    <!-- CART -->
-    <h2>🛒 Cart</h2>
-    <div id="cart"></div>
-    <button onclick="checkout()">💳 Checkout</button>
-
-    <!-- CONTROLS -->
-    <div class="controls">
-        <button onclick="toggleDarkMode()">🌙 Toggle Mode</button>
-        <button onclick="exportCSV()">📊 Export CSV</button>
-    </div>
-
-    <!-- ADMIN -->
-    <div id="adminSection">
-        <h3>Add Product (Admin Only)</h3>
-
-        <form id="item-form">
-            <input type="text" id="name" placeholder="Item Name" required>
-            <input type="number" id="quantity" placeholder="Quantity" required>
-            <input type="number" id="price" placeholder="Price" required>
-            <input type="text" id="category" placeholder="Category">
-            <button type="submit">➕ Add Product</button>
-        </form>
-    </div>
-
-    <!-- SEARCH -->
-    <input type="text" id="search" placeholder="Search products...">
-
-    <!-- TABLE -->
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Qty</th>
-                <th>Price</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="item-list"></tbody>
-    </table>
-
+<div class="hero">
+    <h2>Professional Ecommerce Website</h2>
+    <p>Buy quality products online</p>
 </div>
 
+<div class="search-box">
+    <input type="text" id="search" placeholder="Search products...">
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="admin-panel">
+    <h2>Admin Product Upload</h2>
+
+    <form id="productForm">
+        <input type="text" id="name" placeholder="Product Name" required>
+
+        <input type="number" id="price" placeholder="Price" required>
+
+        <input type="number" id="quantity" placeholder="Quantity" required>
+
+        <input type="text" id="category" placeholder="Category">
+
+        <input type="text" id="image" placeholder="Image URL">
+
+        <button type="submit">Add Product</button>
+    </form>
+</div>
+
+<h2 class="section-title">Products</h2>
+
+<div id="products" class="products"></div>
+
+<h2 class="section-title">🛒 Shopping Cart</h2>
+
+<div id="cart"></div>
+
+<button class="checkout-btn" onclick="checkout()">
+Checkout
+</button>
+
 <script src="script.js"></script>
+
 </body>
 </html>
-<!-- FIREBASE SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- YOUR SCRIPT -->
-<script src="script.js"></script>

@@ -1,34 +1,71 @@
 let users = JSON.parse(localStorage.getItem("users")) || [
-    { username: "admin", password: "admin123", role: "admin" }
+{
+username:"admin",
+password:"admin123",
+role:"admin"
+}
 ];
 
-// SIGNUP
-function signup() {
-    const username = document.getElementById("signupUser").value;
-    const password = document.getElementById("signupPass").value;
+function signup(){
 
-    if (!username || !password) return alert("Fill all fields");
+const username =
+document.getElementById("signupUser").value;
 
-    users.push({
-        username,
-        password,
-        role: "user"
-    });
+const password =
+document.getElementById("signupPass").value;
 
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("Account created!");
-    window.location.href = "login.html";
+if(!username || !password){
+alert("Fill all fields");
+return;
 }
 
-// LOGIN
-function login() {
-    const username = document.getElementById("loginUser").value;
-    const password = document.getElementById("loginPass").value;
+const exists = users.find(
+u => u.username === username
+);
 
-    const user = users.find(u => u.username === username && u.password === password);
+if(exists){
+alert("User already exists");
+return;
+}
 
-    if (!user) return alert("Invalid login");
+users.push({
+username,
+password,
+role:"user"
+});
 
-    localStorage.setItem("currentUser", JSON.stringify(user));
-    window.location.href = "index.html";
+localStorage.setItem(
+"users",
+JSON.stringify(users)
+);
+
+alert("Account created");
+
+window.location.href = "login.html";
+}
+
+function login(){
+
+const username =
+document.getElementById("loginUser").value;
+
+const password =
+document.getElementById("loginPass").value;
+
+const user = users.find(
+u => u.username === username &&
+u.password === password
+);
+
+if(!user){
+alert("Invalid login");
+return;
+}
+
+localStorage.setItem(
+"currentUser",
+JSON.stringify(user)
+);
+
+window.location.href = "index.html";
 }
